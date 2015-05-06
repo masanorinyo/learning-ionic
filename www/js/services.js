@@ -2,15 +2,21 @@ angular.module('songhop.services', [])
   .factory('User',function(){
     return {
       favorites : [],
+      newFavorites: 0,
       addToFavorite: function(song){
         if(song){
           this.favorites.unshift(song);
+          this.newFavorites++;
         }
       },
       removeFromFavorites: function(song, index){
         if(song){
           this.favorites.splice(index,1);
         }
+      },
+      favoriteCount: function(){
+        console.log(this.newFavorites);
+        return this.newFavorites;
       }
     }
   })
@@ -31,7 +37,6 @@ angular.module('songhop.services', [])
           method: "GET",
           url: SERVER.url + '/recommendations'
         }).success(function(data){
-          console.log(data);
           self.queue = self.queue.concat(data);
         })
       },

@@ -4,12 +4,26 @@ angular.module('songhop.controllers', ['ionic', 'songhop.services'])
 /*
 Controller for the discover page
 */
-.controller('DiscoverCtrl', function($scope, $timeout, User, Recommendation) {
+.controller('DiscoverCtrl', function($scope,  $ionicLoading, $timeout, User, Recommendation) {
+  
+  var showLoading = function(){
+    $ionicLoading.show({
+      template: '<i class="ion-loading-c"></i>',
+      noBackdrop: true
+    });
+  };
+  var hideLoading = function(){
+    $ionicLoading.hide();
+  };
+
   Recommendation.init()
     .then(function(){
-      console.log(Recommendation.queue);
       $scope.currentSong = Recommendation.queue[0];
-      Recommendation.playCurrentSong()
+      Recommendation.playCurrentSong();
+    })
+    .then(function(){
+      hideLoading();
+      $scope.currentSong.loading = true;
     });
   
   $scope.nextSong = function(bool){
@@ -17,11 +31,15 @@ Controller for the discover page
     $scope.currentSong.hide = true;
     if(bool) User.addToFavorite($scope.currentSong);
 
-    Recommendation.nextSong();
-    Recommendation.playCurrentSong();
     $timeout(function(){
       $scope.currentSong = Recommendation.queue[0];
+      $scope.currentSong.loaded = false;
     },250);
+
+    Recommendation.nextSong();
+    Recommendation.playCurrentSong().then(function(){
+      $scope.currentSong.loaded = true;
+    });
     
   };
 
@@ -32,6 +50,8 @@ Controller for the discover page
       return "";
     }
   };
+
+  showLoading();
 })
 
 
@@ -49,11 +69,14 @@ Controller for the favorites page
 /*
 Controller for our tab bar
 */
-.controller('TabsCtrl', function($scope, Recommendation) {
+.controller('TabsCtrl', function($scope,User, Recommendation) {
+  
   $scope.enteringFavorites = function(){
+    User.newFavorites = 0;
     Recommendation.haltAudio();
   }
   $scope.leavingFavorites = function(){
     Recommendation.init();  
   }
+  $scope.model = User;
 });
