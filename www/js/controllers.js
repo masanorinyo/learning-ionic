@@ -58,10 +58,29 @@ Controller for the discover page
 /*
 Controller for the favorites page
 */
-.controller('FavoritesCtrl', function($scope, User) {
+.controller('FavoritesCtrl', function($scope, User, $ionicActionSheet) {
   $scope.favorites = User.favorites;
+  $scope.username = User.username;
   $scope.removeSong = function(song, index){
     User.removeFromFavorites(song,index);
+  };
+
+  $scope.share = function ( song ) {
+    var hideSheet = $ionicActionSheet.show({
+      buttons: [
+        { text : '<b>YO</b> Test'},
+        { text: "yeess" }
+      ],
+      destrcutiveText : "delete",
+      titleText : "testing",
+      cancelText : "Cancelling",
+      cancel : function () {
+        console.log('test');
+      },
+      buttonClicked : function(index){
+        console.log(index,'test');
+      }
+    });
   };
 })
 
@@ -69,8 +88,13 @@ Controller for the favorites page
 /*
 Controller for our tab bar
 */
-.controller('TabsCtrl', function($scope,User, Recommendation) {
+.controller('TabsCtrl', function($scope, $state, User, Recommendation) {
   
+  $scope.logout = function(){
+    User.destroySession();
+    $state.go("splash");
+  };
+
   $scope.enteringFavorites = function(){
     User.newFavorites = 0;
     Recommendation.haltAudio();
@@ -79,4 +103,17 @@ Controller for our tab bar
     Recommendation.init();  
   }
   $scope.model = User;
-});
+})
+
+.controller("SplashCtrl",function($scope, $state, User){
+  
+  $scope.submitForm = function(username, signingUp){
+    User.auth(username,signingUp).then(function(){
+      $state.go("tab.discover");
+    }), function(){
+      alert("hmmm.. try another username");
+    }
+  };
+
+})
+
